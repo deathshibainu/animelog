@@ -1,25 +1,162 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AnimeLog</title>
-  <style>
-    body {
-      margin: 0;
-      background: #14121c;
-      color: white;
-      font-family: system-ui, sans-serif;
-      text-align: center;
-      padding: 80px 20px;
-    }
-    h1 { color: #b69cff; }
-    p { color: #c8c5d1; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#171321">
+<title>AnimeLog</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#171321;color:#f7f4ff}
+header{padding:22px 20px 12px;border-bottom:1px solid #322b41}
+h1{margin:0;color:#bb9aff;font-size:1.7rem}
+h2{font-size:1.2rem}
+small,.muted{color:#ada6bb}
+main{padding:20px 16px 110px;max-width:700px;margin:auto}
+.panel,.item{background:#251e32;border:1px solid #3d3350;border-radius:16px;padding:17px;margin-bottom:13px}
+.item{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.item strong{display:block;margin-bottom:6px}
+button,input,select{font:inherit}
+button{cursor:pointer;border:0;border-radius:11px;padding:12px 16px;background:#7952c9;color:white}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #c9adff}
+input,select{width:100%;background:#30273e;color:white;border:1px solid #625375;border-radius:10px;padding:12px;margin:8px 0 15px}
+label{display:block;margin-top:12px}
+.heart{background:transparent;font-size:1.7rem;padding:8px;color:#d6c8ed}
+.empty{text-align:center;padding:45px 15px;color:#bcb5ca}
+nav{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(4,1fr);background:#211a2d;border-top:1px solid #453554;padding-bottom:env(safe-area-inset-bottom)}
+nav button{background:transparent;color:#ada6bb;border-radius:0;padding:13px 3px;font-size:.8rem}
+nav button.active{color:#c6a8ff;font-weight:bold}
+nav span{display:block;font-size:1.4rem;margin-bottom:3px}
+.primary{width:100%;font-weight:bold}
+.status{font-size:.8rem;color:#bcb2cc}
+.hidden{display:none}
+</style>
 </head>
 <body>
-  <h1>AnimeLog</h1>
-  <p>自分だけのアニメ視聴管理アプリ</p>
-  <p>開発を開始しました！</p>
+<header>
+<h1>AnimeLog</h1>
+<small>自分だけのアニメ視聴管理アプリ</small>
+</header>
+<main>
+<section id="listPage">
+<h2>アニメ一覧</h2>
+<input id="search" type="search" placeholder="作品名で検索">
+<div id="animeList"></div>
+</section>
+<section id="favPage" class="hidden">
+<h2>お気に入り</h2>
+<div id="favList"></div>
+</section>
+<section id="addPage" class="hidden">
+<h2>作品を登録</h2>
+<div class="panel">
+<label for="title">作品名</label>
+<input id="title" placeholder="アニメのタイトルを入力">
+<label for="status">視聴状況</label>
+<select id="status">
+<option>視聴予定</option>
+<option>視聴中</option>
+<option>視聴済み</option>
+<option>中断</option>
+</select>
+<button class="primary" id="save">登録する</button>
+</div>
+<p class="muted">現在は手動登録の動作確認版です。</p>
+</section>
+<section id="settingsPage" class="hidden">
+<h2>設定</h2>
+<div class="panel">
+<strong>AnimeLog</strong>
+<p class="muted">開発中のテスト版</p>
+<p>登録データは現在、このブラウザのローカル保存領域に保存されます。</p>
+</div>
+</section>
+</main>
+<nav aria-label="メインメニュー">
+<button class="active" data-page="list"><span>☷</span>一覧</button>
+<button data-page="fav"><span>♥</span>お気に入り</button>
+<button data-page="add"><span>＋</span>登録</button>
+<button data-page="settings"><span>⚙</span>設定</button>
+</nav>
+<script>
+const key="animelog-test-v1";
+let anime=[];
+try{anime=JSON.parse(localStorage.getItem(key)||"[]")}catch(e){anime=[]}
+const pages=["list","fav","add","settings"];
+function persist(){localStorage.setItem(key,JSON.stringify(anime))}
+function show(page){
+ pages.forEach(p=>{
+  document.getElementById(p+"Page").classList.toggle("hidden",p!==page)
+ });
+ document.querySelectorAll("nav button").forEach(b=>{
+  b.classList.toggle("active",b.dataset.page===page)
+ });
+ render();
+}
+function makeItem(a){
+ const el=document.createElement("div");
+ el.className="item";
+ const info=document.createElement("div");
+ const name=document.createElement("strong");
+ name.textContent=a.title;
+ const status=document.createElement("span");
+ status.className="status";
+ status.textContent=a.status;
+ info.append(name,status);
+ const heart=document.createElement("button");
+ heart.className="heart";
+ heart.textContent=a.favorite?"♥":"♡";
+ heart.setAttribute("aria-label","お気に入り切り替え");
+ heart.onclick=()=>{
+  a.favorite=!a.favorite;
+  persist();render();
+ };
+ el.append(info,heart);
+ return el;
+}
+function fill(id,items){
+ const box=document.getElementById(id);
+ box.replaceChildren();
+ if(!items.length){
+  const empty=document.createElement("div");
+  empty.className="empty";
+  empty.textContent="作品がありません";
+  box.append(empty);
+  return;
+ }
+ items.forEach(a=>box.append(makeItem(a)));
+}
+function render(){
+ const q=document.getElementById("search").value.trim().toLowerCase();
+ fill("animeList",anime.filter(a=>a.title.toLowerCase().includes(q)));
+ fill("favList",anime.filter(a=>a.favorite));
+}
+document.querySelectorAll("nav button").forEach(b=>{
+ b.onclick=()=>show(b.dataset.page);
+});
+document.getElementById("search").oninput=render;
+document.getElementById("save").onclick=()=>{
+ const input=document.getElementById("title");
+ const title=input.value.trim();
+ if(!title){alert("作品名を入力してください");return}
+ anime.push({
+  id:crypto.randomUUID(),
+  title,
+  status:document.getElementById("status").value,
+  favorite:false
+ });
+ try{
+  persist();
+  input.value="";
+  show("list");
+  alert("登録しました");
+ }catch(e){
+  anime.pop();
+  alert("保存に失敗しました。再試行してください");
+ }
+};
+show("list");
+</script>
 </body>
 </html>
