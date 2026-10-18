@@ -19,7 +19,7 @@ main{padding:20px 16px 110px;max-width:700px;margin:auto}
 .item strong{display:block;margin-bottom:6px}
 button,input,select{font:inherit}
 button{cursor:pointer;border:0;border-radius:11px;padding:12px 16px;background:#7952c9;color:white}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #c9adff}
+button:disabled{opacity:.5}
 input,select{width:100%;background:#30273e;color:white;border:1px solid #625375;border-radius:10px;padding:12px;margin:8px 0 15px}
 label{display:block;margin-top:12px}
 .heart{background:transparent;font-size:1.7rem;padding:8px;color:#d6c8ed}
@@ -31,6 +31,7 @@ nav span{display:block;font-size:1.4rem;margin-bottom:3px}
 .primary{width:100%;font-weight:bold}
 .status{font-size:.8rem;color:#bcb2cc}
 .hidden{display:none}
+#notice{padding:12px 16px;color:#d7c8f8}
 </style>
 </head>
 <body>
@@ -38,6 +39,7 @@ nav span{display:block;font-size:1.4rem;margin-bottom:3px}
 <h1>AnimeLog</h1>
 <small>自分だけのアニメ視聴管理アプリ</small>
 </header>
+<div id="notice" role="status">データを読み込んでいます…</div>
 <main>
 <section id="listPage">
 <h2>アニメ一覧</h2>
@@ -60,7 +62,7 @@ nav span{display:block;font-size:1.4rem;margin-bottom:3px}
 <option>視聴済み</option>
 <option>中断</option>
 </select>
-<button class="primary" id="save">登録する</button>
+<button class="primary" id="save" disabled>登録する</button>
 </div>
 <p class="muted">現在は手動登録の動作確認版です。</p>
 </section>
@@ -68,8 +70,8 @@ nav span{display:block;font-size:1.4rem;margin-bottom:3px}
 <h2>設定</h2>
 <div class="panel">
 <strong>AnimeLog</strong>
-<p class="muted">開発中のテスト版</p>
-<p>登録データは現在、このブラウザのローカル保存領域に保存されます。</p>
+<p class="muted">IndexedDB保存のテスト版</p>
+<p>作品情報はこのiPhoneのブラウザ内に保存されます。</p>
 </div>
 </section>
 </main>
@@ -80,91 +82,230 @@ nav span{display:block;font-size:1.4rem;margin-bottom:3px}
 <button data-page="settings"><span>⚙</span>設定</button>
 </nav>
 <script>
-const key="animelog-test-v1";
+const legacyKey="animelog-test-v1";
+const dbName="AnimeLogDB";
+const storeName="anime";
+let db=null;
 let anime=[];
-try{anime=JSON.parse(localStorage.getItem(key)||"[]")}catch(e){anime=[]}
+let busy=false;
+
+const notice=document.getElementById("notice");
+const saveButton=document.getElementById("save");
 const pages=["list","fav","add","settings"];
-function persist(){localStorage.setItem(key,JSON.stringify(anime))}
-function show(page){
- pages.forEach(p=>{
-  document.getElementById(p+"Page").classList.toggle("hidden",p!==page)
- });
- document.querySelectorAll("nav button").forEach(b=>{
-  b.classList.toggle("active",b.dataset.page===page)
- });
- render();
-}
-function makeItem(a){
- const el=document.createElement("div");
- el.className="item";
- const info=document.createElement("div");
- const name=document.createElement("strong");
- name.textContent=a.title;
- const status=document.createElement("span");
- status.className="status";
- status.textContent=a.status;
- info.append(name,status);
- const heart=document.createElement("button");
- heart.className="heart";
- heart.textContent=a.favorite?"♥":"♡";
- heart.setAttribute("aria-label","お気に入り切り替え");
- heart.onclick=()=>{
-  a.favorite=!a.favorite;
-  persist();render();
- };
- el.append(info,heart);
- return el;
-}
-function fill(id,items){
- const box=document.getElementById(id);
- box.replaceChildren();
- if(!items.length){
-  const empty=document.createElement("div");
-  empty.className="empty";
-  empty.textContent="作品がありません";
-  box.append(empty);
-  return;
- }
- items.forEach(a=>box.append(makeItem(a)));
-}
-function normalizeKana(text){
-  return text.normalize("NFKC")
-    .replace(/[\u30A1-\u30F6]/g, c =>
-      String.fromCharCode(c.charCodeAt(0)-96)
-    )
-    .toLowerCase();
+
+function message(text){
+  notice.textContent=text;
 }
 
- function render(){
- const q=document.getElementById("search").value.trim().toLowerCase();
- fill("animeList",anime.filter(a=>normalizeKana(a.title).includes(normalizeKana(q))));
- fill("favList",anime.filter(a=>a.favorite));
+function openDatabase(){
+  return new Promise((resolve,reject)=>{
+    const request=indexedDB.open(dbName,1);
+    request.onupgradeneeded=()=>{
+      const database=request.result;
+      if(!database.objectStoreNames.contains(storeName)){
+        database.createObjectStore(storeName,{keyPath:"id"});
+      }
+    };
+    request.onsuccess=()=>resolve(request.result);
+    request.onerror=()=>reject(request.error);
+    request.onblocked=()=>reject(new Error("DB blocked"));
+  });
 }
+
+function getSavedAnime(){
+  return new Promise((resolve,reject)=>{
+    const transaction=db.transaction(storeName,"readonly");
+    const request=transaction.objectStore(storeName).getAll();
+    request.onsuccess=()=>resolve(request.result);
+    request.onerror=()=>reject(request.error);
+    transaction.onabort=()=>reject(transaction.error);
+  });
+}
+
+function saveAll(items){
+  return new Promise((resolve,reject)=>{
+    const transaction=db.transaction(storeName,"readwrite");
+    const store=transaction.objectStore(storeName);
+    store.clear();
+    items.forEach(item=>store.put(item));
+    transaction.oncomplete=()=>resolve();
+    transaction.onerror=()=>reject(transaction.error);
+    transaction.onabort=()=>reject(transaction.error);
+  });
+}
+
+async function initialize(){
+  try{
+    db=await openDatabase();
+    anime=await getSavedAnime();
+
+    if(anime.length===0){
+      let old=[];
+      try{
+        const raw=localStorage.getItem(legacyKey);
+        const parsed=raw?JSON.parse(raw):[];
+        if(Array.isArray(parsed))old=parsed;
+      }catch(error){
+        message("旧データの読み込みに失敗しました");
+        throw error;
+      }
+
+      if(old.length){
+        await saveAll(old);
+        anime=await getSavedAnime();
+        message("以前の登録データを引き継ぎました");
+      }else{
+        message("データの読み込みが完了しました");
+      }
+    }else{
+      message("データの読み込みが完了しました");
+    }
+
+    saveButton.disabled=false;
+    render();
+  }catch(error){
+    console.error(error);
+    db=null;
+    saveButton.disabled=true;
+    message("保存領域を開けません。元のデータは削除していません。");
+  }
+}
+
+function normalizeKana(text){
+  return String(text).normalize("NFKC")
+    .replace(/[\u30A1-\u30F6]/g,c=>
+      String.fromCharCode(c.charCodeAt(0)-96)
+    ).toLowerCase();
+}
+
+function show(page){
+  pages.forEach(p=>{
+    document.getElementById(p+"Page")
+      .classList.toggle("hidden",p!==page);
+  });
+  document.querySelectorAll("nav button").forEach(b=>{
+    b.classList.toggle("active",b.dataset.page===page);
+  });
+  render();
+}
+
+function makeItem(a){
+  const el=document.createElement("div");
+  el.className="item";
+
+  const info=document.createElement("div");
+  const name=document.createElement("strong");
+  name.textContent=a.title;
+
+  const status=document.createElement("span");
+  status.className="status";
+  status.textContent=a.status;
+
+  info.append(name,status);
+
+  const heart=document.createElement("button");
+  heart.className="heart";
+  heart.textContent=a.favorite?"♥":"♡";
+  heart.setAttribute("aria-label","お気に入り切り替え");
+
+  heart.onclick=async()=>{
+    if(!db||busy)return;
+    busy=true;
+    heart.disabled=true;
+
+    const updated=anime.map(item=>
+      item.id===a.id
+        ?{...item,favorite:!item.favorite}
+        :item
+    );
+
+    try{
+      await saveAll(updated);
+      anime=updated;
+      render();
+    }catch(error){
+      console.error(error);
+      alert("お気に入りの保存に失敗しました");
+    }finally{
+      busy=false;
+      heart.disabled=false;
+    }
+  };
+
+  el.append(info,heart);
+  return el;
+}
+
+function fill(id,items){
+  const box=document.getElementById(id);
+  box.replaceChildren();
+
+  if(!items.length){
+    const empty=document.createElement("div");
+    empty.className="empty";
+    empty.textContent="作品がありません";
+    box.append(empty);
+    return;
+  }
+
+  items.forEach(a=>box.append(makeItem(a)));
+}
+
+function render(){
+  const q=normalizeKana(
+    document.getElementById("search").value.trim()
+  );
+  fill("animeList",anime.filter(a=>
+    normalizeKana(a.title).includes(q)
+  ));
+  fill("favList",anime.filter(a=>a.favorite));
+}
+
 document.querySelectorAll("nav button").forEach(b=>{
- b.onclick=()=>show(b.dataset.page);
+  b.onclick=()=>show(b.dataset.page);
 });
+
 document.getElementById("search").oninput=render;
-document.getElementById("save").onclick=()=>{
- const input=document.getElementById("title");
- const title=input.value.trim();
- if(!title){alert("作品名を入力してください");return}
- anime.push({
-  id:crypto.randomUUID(),
-  title,
-  status:document.getElementById("status").value,
-  favorite:false
- });
- try{
-  persist();
-  input.value="";
-  show("list");
-  alert("登録しました");
- }catch(e){
-  anime.pop();
-  alert("保存に失敗しました。再試行してください");
- }
+
+saveButton.onclick=async()=>{
+  if(!db||busy)return;
+
+  const input=document.getElementById("title");
+  const title=input.value.trim();
+
+  if(!title){
+    alert("作品名を入力してください");
+    return;
+  }
+
+  const entry={
+    id:crypto.randomUUID(),
+    title,
+    status:document.getElementById("status").value,
+    favorite:false
+  };
+
+  busy=true;
+  saveButton.disabled=true;
+
+  try{
+    const updated=[...anime,entry];
+    await saveAll(updated);
+    anime=updated;
+    input.value="";
+    show("list");
+    alert("登録しました");
+  }catch(error){
+    console.error(error);
+    alert("保存に失敗しました。入力内容は残っています");
+  }finally{
+    busy=false;
+    if(db)saveButton.disabled=false;
+  }
 };
+
 show("list");
+initialize();
 </script>
 </body>
 </html>
