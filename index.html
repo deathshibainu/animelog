@@ -127,9 +127,17 @@ function fill(id,items){
  }
  items.forEach(a=>box.append(makeItem(a)));
 }
-function render(){
+function normalizeKana(text){
+  return text.normalize("NFKC")
+    .replace(/[\u30A1-\u30F6]/g, c =>
+      String.fromCharCode(c.charCodeAt(0)-96)
+    )
+    .toLowerCase();
+}
+
+ function render(){
  const q=document.getElementById("search").value.trim().toLowerCase();
- fill("animeList",anime.filter(a=>a.title.toLowerCase().includes(q)));
+ fill("animeList",anime.filter(a=>normalizeKana(a.title).includes(normalizeKana(q))));
  fill("favList",anime.filter(a=>a.favorite));
 }
 document.querySelectorAll("nav button").forEach(b=>{
