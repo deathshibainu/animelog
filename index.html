@@ -6,306 +6,50 @@
 <meta name="theme-color" content="#171321">
 <title>AnimeLog</title>
 <style>
-:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark}
-*{box-sizing:border-box}
-body{margin:0;background:#171321;color:#f7f4ff}
-header{padding:22px 20px 12px;border-bottom:1px solid #322b41}
-h1{margin:0;color:#bb9aff;font-size:1.7rem}
-h2{font-size:1.2rem}
-small,.muted{color:#ada6bb}
-main{padding:20px 16px 110px;max-width:700px;margin:auto}
-.panel,.item{background:#251e32;border:1px solid #3d3350;border-radius:16px;padding:17px;margin-bottom:13px}
-.item{display:flex;justify-content:space-between;gap:12px;align-items:center}
-.item strong{display:block;margin-bottom:6px}
-button,input,select{font:inherit}
-button{cursor:pointer;border:0;border-radius:11px;padding:12px 16px;background:#7952c9;color:white}
-button:disabled{opacity:.5}
-input,select{width:100%;background:#30273e;color:white;border:1px solid #625375;border-radius:10px;padding:12px;margin:8px 0 15px}
-label{display:block;margin-top:12px}
-.heart{background:transparent;font-size:1.7rem;padding:8px;color:#d6c8ed}
-.empty{text-align:center;padding:45px 15px;color:#bcb5ca}
-nav{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(4,1fr);background:#211a2d;border-top:1px solid #453554;padding-bottom:env(safe-area-inset-bottom)}
-nav button{background:transparent;color:#ada6bb;border-radius:0;padding:13px 3px;font-size:.8rem}
-nav button.active{color:#c6a8ff;font-weight:bold}
-nav span{display:block;font-size:1.4rem;margin-bottom:3px}
-.primary{width:100%;font-weight:bold}
-.status{font-size:.8rem;color:#bcb2cc}
-.hidden{display:none}
-#notice{padding:12px 16px;color:#d7c8f8}
+:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#171321;color:#f7f4ff}header{padding:20px 16px 12px;border-bottom:1px solid #322b41}h1{margin:0;color:#bb9aff;font-size:1.7rem}h2{font-size:1.2rem}small,.muted{color:#ada6bb}main{padding:18px 16px 115px;max-width:700px;margin:auto}.panel,.item,.result{background:#251e32;border:1px solid #3d3350;border-radius:16px;padding:15px;margin-bottom:12px}.item,.result{display:flex;gap:12px;align-items:center}.grow{flex:1;min-width:0}.item strong,.result strong{display:block;margin-bottom:5px;overflow-wrap:anywhere}button,input,select,textarea{font:inherit}button{border:0;border-radius:11px;padding:12px 14px;background:#7952c9;color:white;cursor:pointer}button:disabled{opacity:.55}input,select,textarea{width:100%;background:#30273e;color:white;border:1px solid #625375;border-radius:10px;padding:12px;margin:7px 0 13px}textarea{min-height:80px}label{display:block;margin-top:9px}.heart{background:transparent;font-size:1.6rem;padding:8px;color:#d6c8ed}.empty{text-align:center;padding:35px 12px;color:#bcb5ca}nav{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(4,1fr);background:#211a2d;border-top:1px solid #453554;padding-bottom:env(safe-area-inset-bottom)}nav button{background:transparent;color:#ada6bb;border-radius:0;padding:12px 2px;font-size:.8rem}nav button.active{color:#c6a8ff;font-weight:bold}nav span{display:block;font-size:1.4rem;margin-bottom:3px}.primary{width:100%;font-weight:bold}.status{font-size:.8rem;color:#bcb2cc}.hidden{display:none!important}#notice{padding:10px 16px;color:#d7c8f8;font-size:.9rem}.poster{width:65px;height:88px;border-radius:7px;object-fit:cover;background:#3d3350;flex-shrink:0}.poster.large{width:100px;height:135px}.mutedline{font-size:.8rem;color:#bcb2cc}#results{margin-top:12px}.subtle{background:#403551}.choice{width:100%;text-align:left;background:transparent;padding:0}.stack{display:flex;gap:10px;align-items:center}.stack button{flex:1}.error{color:#ffbeae;white-space:pre-line}.done{color:#cfb6ff}
 </style>
 </head>
 <body>
-<header>
-<h1>AnimeLog</h1>
-<small>自分だけのアニメ視聴管理アプリ</small>
-</header>
+<header><h1>AnimeLog</h1><small>自分だけのアニメ視聴管理アプリ</small></header>
 <div id="notice" role="status">データを読み込んでいます…</div>
 <main>
-<section id="listPage">
-<h2>アニメ一覧</h2>
-<input id="search" type="search" placeholder="作品名で検索">
-<div id="animeList"></div>
-</section>
-<section id="favPage" class="hidden">
-<h2>お気に入り</h2>
-<div id="favList"></div>
-</section>
-<section id="addPage" class="hidden">
-<h2>作品を登録</h2>
-<div class="panel">
-<label for="title">作品名</label>
-<input id="title" placeholder="アニメのタイトルを入力">
-<label for="status">視聴状況</label>
-<select id="status">
-<option>視聴予定</option>
-<option>視聴中</option>
-<option>視聴済み</option>
-<option>中断</option>
-</select>
-<button class="primary" id="save" disabled>登録する</button>
-</div>
-<p class="muted">現在は手動登録の動作確認版です。</p>
-</section>
-<section id="settingsPage" class="hidden">
-<h2>設定</h2>
-<div class="panel">
-<strong>AnimeLog</strong>
-<p class="muted">IndexedDB保存のテスト版</p>
-<p>作品情報はこのiPhoneのブラウザ内に保存されます。</p>
-</div>
-</section>
+<section id="listPage"><h2>アニメ一覧</h2><input id="search" type="search" placeholder="登録済みの作品名で検索"><div id="animeList"></div></section>
+<section id="favPage" class="hidden"><h2>お気に入り</h2><div id="favList"></div></section>
+<section id="addPage" class="hidden"><h2>作品を登録</h2><div id="searchPanel" class="panel"><label for="externalQuery">アニメを検索</label><input id="externalQuery" type="search" autocomplete="off" placeholder="作品名を入力（例：フリーレン）"><div id="searchMessage" class="mutedline">検索すると候補が表示されます。</div><div id="results"></div><button id="more" class="primary subtle hidden">もっと見る</button><hr style="border:0;border-top:1px solid #3d3350;margin:18px 0"><button id="manual" class="primary subtle">候補がない場合は手動登録</button></div>
+<div id="confirmPanel" class="panel hidden"><h2 id="confirmHeading">登録内容の確認</h2><img id="previewPoster" class="poster large hidden" alt="作品画像"><label for="title">作品名</label><input id="title" placeholder="作品名"><label for="status">視聴状況</label><select id="status"><option>視聴予定</option><option>視聴中</option><option>視聴済み</option><option>中断</option></select><label for="rating">評価（任意）</label><select id="rating"><option value="">未評価</option></select><label><input id="favorite" type="checkbox" style="width:auto;margin-right:8px">お気に入りにする</label><label for="memo">メモ（任意）</label><textarea id="memo"></textarea><div class="stack"><button id="back" class="subtle">戻る</button><button id="save" disabled>登録する</button></div></div>
+<p class="muted">外部検索にはインターネット接続が必要です。保存はiPhone内のIndexedDBで行います。</p></section>
+<section id="settingsPage" class="hidden"><h2>設定</h2><div class="panel"><strong>AnimeLog</strong><p class="muted">外部検索・IndexedDB保存のテスト版</p><p>登録した作品・評価・お気に入りはこの端末に保存されます。</p></div></section>
 </main>
-<nav aria-label="メインメニュー">
-<button class="active" data-page="list"><span>☷</span>一覧</button>
-<button data-page="fav"><span>♥</span>お気に入り</button>
-<button data-page="add"><span>＋</span>登録</button>
-<button data-page="settings"><span>⚙</span>設定</button>
-</nav>
+<nav aria-label="メインメニュー"><button class="active" data-page="list"><span>☷</span>一覧</button><button data-page="fav"><span>♥</span>お気に入り</button><button data-page="add"><span>＋</span>登録</button><button data-page="settings"><span>⚙</span>設定</button></nav>
 <script>
-const legacyKey="animelog-test-v1";
-const dbName="AnimeLogDB";
-const storeName="anime";
-let db=null;
-let anime=[];
-let busy=false;
-
-const notice=document.getElementById("notice");
-const saveButton=document.getElementById("save");
-const pages=["list","fav","add","settings"];
-
-function message(text){
-  notice.textContent=text;
-}
-
-function openDatabase(){
-  return new Promise((resolve,reject)=>{
-    const request=indexedDB.open(dbName,1);
-    request.onupgradeneeded=()=>{
-      const database=request.result;
-      if(!database.objectStoreNames.contains(storeName)){
-        database.createObjectStore(storeName,{keyPath:"id"});
-      }
-    };
-    request.onsuccess=()=>resolve(request.result);
-    request.onerror=()=>reject(request.error);
-    request.onblocked=()=>reject(new Error("DB blocked"));
-  });
-}
-
-function getSavedAnime(){
-  return new Promise((resolve,reject)=>{
-    const transaction=db.transaction(storeName,"readonly");
-    const request=transaction.objectStore(storeName).getAll();
-    request.onsuccess=()=>resolve(request.result);
-    request.onerror=()=>reject(request.error);
-    transaction.onabort=()=>reject(transaction.error);
-  });
-}
-
-function saveAll(items){
-  return new Promise((resolve,reject)=>{
-    const transaction=db.transaction(storeName,"readwrite");
-    const store=transaction.objectStore(storeName);
-    store.clear();
-    items.forEach(item=>store.put(item));
-    transaction.oncomplete=()=>resolve();
-    transaction.onerror=()=>reject(transaction.error);
-    transaction.onabort=()=>reject(transaction.error);
-  });
-}
-
-async function initialize(){
-  try{
-    db=await openDatabase();
-    anime=await getSavedAnime();
-
-    if(anime.length===0){
-      let old=[];
-      try{
-        const raw=localStorage.getItem(legacyKey);
-        const parsed=raw?JSON.parse(raw):[];
-        if(Array.isArray(parsed))old=parsed;
-      }catch(error){
-        message("旧データの読み込みに失敗しました");
-        throw error;
-      }
-
-      if(old.length){
-        await saveAll(old);
-        anime=await getSavedAnime();
-        message("以前の登録データを引き継ぎました");
-      }else{
-        message("データの読み込みが完了しました");
-      }
-    }else{
-      message("データの読み込みが完了しました");
-    }
-
-    saveButton.disabled=false;
-    render();
-  }catch(error){
-    console.error(error);
-    db=null;
-    saveButton.disabled=true;
-    message("保存領域を開けません。元のデータは削除していません。");
-  }
-}
-
-function normalizeKana(text){
-  return String(text).normalize("NFKC")
-    .replace(/[\u30A1-\u30F6]/g,c=>
-      String.fromCharCode(c.charCodeAt(0)-96)
-    ).toLowerCase();
-}
-
-function show(page){
-  pages.forEach(p=>{
-    document.getElementById(p+"Page")
-      .classList.toggle("hidden",p!==page);
-  });
-  document.querySelectorAll("nav button").forEach(b=>{
-    b.classList.toggle("active",b.dataset.page===page);
-  });
-  render();
-}
-
-function makeItem(a){
-  const el=document.createElement("div");
-  el.className="item";
-
-  const info=document.createElement("div");
-  const name=document.createElement("strong");
-  name.textContent=a.title;
-
-  const status=document.createElement("span");
-  status.className="status";
-  status.textContent=a.status;
-
-  info.append(name,status);
-
-  const heart=document.createElement("button");
-  heart.className="heart";
-  heart.textContent=a.favorite?"♥":"♡";
-  heart.setAttribute("aria-label","お気に入り切り替え");
-
-  heart.onclick=async()=>{
-    if(!db||busy)return;
-    busy=true;
-    heart.disabled=true;
-
-    const updated=anime.map(item=>
-      item.id===a.id
-        ?{...item,favorite:!item.favorite}
-        :item
-    );
-
-    try{
-      await saveAll(updated);
-      anime=updated;
-      render();
-    }catch(error){
-      console.error(error);
-      alert("お気に入りの保存に失敗しました");
-    }finally{
-      busy=false;
-      heart.disabled=false;
-    }
-  };
-
-  el.append(info,heart);
-  return el;
-}
-
-function fill(id,items){
-  const box=document.getElementById(id);
-  box.replaceChildren();
-
-  if(!items.length){
-    const empty=document.createElement("div");
-    empty.className="empty";
-    empty.textContent="作品がありません";
-    box.append(empty);
-    return;
-  }
-
-  items.forEach(a=>box.append(makeItem(a)));
-}
-
-function render(){
-  const q=normalizeKana(
-    document.getElementById("search").value.trim()
-  );
-  fill("animeList",anime.filter(a=>
-    normalizeKana(a.title).includes(q)
-  ));
-  fill("favList",anime.filter(a=>a.favorite));
-}
-
-document.querySelectorAll("nav button").forEach(b=>{
-  b.onclick=()=>show(b.dataset.page);
-});
-
-document.getElementById("search").oninput=render;
-
-saveButton.onclick=async()=>{
-  if(!db||busy)return;
-
-  const input=document.getElementById("title");
-  const title=input.value.trim();
-
-  if(!title){
-    alert("作品名を入力してください");
-    return;
-  }
-
-  const entry={
-    id:crypto.randomUUID(),
-    title,
-    status:document.getElementById("status").value,
-    favorite:false
-  };
-
-  busy=true;
-  saveButton.disabled=true;
-
-  try{
-    const updated=[...anime,entry];
-    await saveAll(updated);
-    anime=updated;
-    input.value="";
-    show("list");
-    alert("登録しました");
-  }catch(error){
-    console.error(error);
-    alert("保存に失敗しました。入力内容は残っています");
-  }finally{
-    busy=false;
-    if(db)saveButton.disabled=false;
-  }
-};
-
-show("list");
-initialize();
+const legacyKey="animelog-test-v1",dbName="AnimeLogDB",storeName="anime";
+let db=null,anime=[],busy=false,searchTimer=0,searchToken=0,searchPage=1,hasMore=false,selected=null,results=[];
+const $=id=>document.getElementById(id),pages=["list","fav","add","settings"];
+function message(s){$("notice").textContent=s}
+function openDatabase(){return new Promise((resolve,reject)=>{const r=indexedDB.open(dbName,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(storeName))r.result.createObjectStore(storeName,{keyPath:"id"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.onblocked=()=>reject(new Error("DB blocked"))})}
+function getSavedAnime(){return new Promise((resolve,reject)=>{const t=db.transaction(storeName,"readonly"),r=t.objectStore(storeName).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);t.onabort=()=>reject(t.error)})}
+function saveAll(items){return new Promise((resolve,reject)=>{const t=db.transaction(storeName,"readwrite"),s=t.objectStore(storeName);s.clear();items.forEach(a=>s.put(a));t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error)})}
+async function initialize(){try{db=await openDatabase();anime=await getSavedAnime();if(!anime.length){const raw=localStorage.getItem(legacyKey);if(raw){const old=JSON.parse(raw);if(!Array.isArray(old))throw Error("旧データ形式エラー");if(old.length){await saveAll(old);anime=await getSavedAnime();message("以前の登録データを引き継ぎました")}}}if(!$("notice").textContent.includes("引き継ぎ"))message("データの読み込みが完了しました");$("save").disabled=false;render()}catch(e){console.error(e);db=null;$("save").disabled=true;message("保存領域を開けません。元のデータは削除していません。")}}
+function normalizeKana(s){return String(s||"").normalize("NFKC").replace(/[\u30A1-\u30F6]/g,c=>String.fromCharCode(c.charCodeAt(0)-96)).toLowerCase()}
+function show(page){pages.forEach(p=>$(p+"Page").classList.toggle("hidden",p!==page));document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));render()}
+function makePoster(src){const img=document.createElement("img");img.className="poster";img.alt="作品画像";img.loading="lazy";if(src)img.src=src;return img}
+function makeItem(a){const el=document.createElement("div");el.className="item";if(a.coverUrl)el.append(makePoster(a.coverUrl));const info=document.createElement("div");info.className="grow";const title=document.createElement("strong");title.textContent=a.title;const status=document.createElement("span");status.className="status";status.textContent=a.status||"視聴予定";info.append(title,status);const heart=document.createElement("button");heart.className="heart";heart.textContent=a.favorite?"♥":"♡";heart.setAttribute("aria-label","お気に入り切り替え");heart.onclick=async()=>{if(!db||busy)return;busy=true;const updated=anime.map(item=>item.id===a.id?{...item,favorite:!item.favorite}:item);try{await saveAll(updated);anime=updated;render()}catch(e){alert("お気に入りを保存できませんでした")}finally{busy=false}};el.append(info,heart);return el}
+function fill(id,items){const box=$(id);box.replaceChildren();if(!items.length){const x=document.createElement("div");x.className="empty";x.textContent="作品がありません";box.append(x);return}items.forEach(a=>box.append(makeItem(a)))}
+function render(){const q=normalizeKana($("search").value.trim());fill("animeList",anime.filter(a=>normalizeKana(a.title).includes(q)));fill("favList",anime.filter(a=>a.favorite))}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.page));$("search").oninput=render;
+const aniQuery=`query ($search:String,$page:Int){Page(page:$page,perPage:20){pageInfo{hasNextPage}media(search:$search,type:ANIME){id title{native romaji english}coverImage{large}format}}}`;
+async function anilist(q,page){const response=await fetch("https://graphql.anilist.co",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({query:aniQuery,variables:{search:q,page}})});if(!response.ok)throw Error("AniList HTTP "+response.status);const json=await response.json();if(json.errors?.length)throw Error("AniList APIエラー");const data=json.data?.Page;if(!data)throw Error("検索データを取得できません");return{items:data.media.map(m=>({key:"anilist:"+m.id,title:m.title.native||m.title.romaji||m.title.english||"",coverUrl:m.coverImage?.large||"",format:m.format||"",source:"AniList",externalId:m.id})),more:!!data.pageInfo?.hasNextPage}}
+async function jikan(q,page){const url="https://api.jikan.moe/v4/anime?"+new URLSearchParams({q,limit:"20",page:String(page)});const response=await fetch(url);if(!response.ok)throw Error("Jikan HTTP "+response.status);const json=await response.json();return{items:(json.data||[]).map(m=>({key:"jikan:"+m.mal_id,title:m.title_japanese||m.title||"",coverUrl:m.images?.jpg?.large_image_url||m.images?.jpg?.image_url||"",format:m.type||"",source:"Jikan",externalId:m.mal_id})),more:!!json.pagination?.has_next_page}}
+let source="AniList";
+function displayResults(){const box=$("results");box.replaceChildren();results.forEach(a=>{const row=document.createElement("button");row.className="result choice";if(a.coverUrl)row.append(makePoster(a.coverUrl));const info=document.createElement("div");info.className="grow";const title=document.createElement("strong");title.textContent=a.title;const extra=document.createElement("div");extra.className="mutedline";extra.textContent=(a.format||"アニメ")+" ・ "+a.source+(anime.some(x=>x.source===a.source&&x.externalId===a.externalId)?" ・ 登録済み":"");info.append(title,extra);row.append(info);row.onclick=()=>openConfirmation(a);box.append(row)});$("more").classList.toggle("hidden",!hasMore)}
+async function runSearch(page=1){const q=$("externalQuery").value.trim();if(!q){results=[];hasMore=false;displayResults();$("searchMessage").textContent="作品名を入力してください";return}const token=++searchToken;$("searchMessage").textContent="検索中…";$("more").disabled=true;try{let data;if(page===1){data=await anilist(q,1);source="AniList";if(!data.items.length){data=await jikan(q,1);source="Jikan"}}else{data=source==="AniList"?await anilist(q,page):await jikan(q,page)}if(token!==searchToken)return;searchPage=page;const known=new Set(page===1?[]:results.map(x=>x.key));results=page===1?[]:results;data.items.forEach(a=>{if(!known.has(a.key)){results.push(a);known.add(a.key)}});hasMore=data.more;displayResults();$("searchMessage").textContent=results.length?results.length+"件表示（"+source+"）":"候補がありません。手動登録できます。"}catch(e){if(token!==searchToken)return;console.error(e);$("searchMessage").textContent="検索できませんでした。通信状態を確認して再入力してください。手動登録も利用できます。";if(page===1){results=[];hasMore=false;displayResults()}}finally{if(token===searchToken)$("more").disabled=false}}
+$("externalQuery").addEventListener("input",()=>{clearTimeout(searchTimer);++searchToken;const q=$("externalQuery").value.trim();$("searchMessage").textContent=q?"入力待機中…":"検索すると候補が表示されます。";results=[];hasMore=false;displayResults();if(q)searchTimer=setTimeout(()=>runSearch(1),500)});
+$("more").onclick=()=>runSearch(searchPage+1);
+for(let i=1;i<=10;i++){const o=document.createElement("option");o.value=String(i);o.textContent=i+"/10";$("rating").append(o)}
+function openConfirmation(a){selected=a;$("searchPanel").classList.add("hidden");$("confirmPanel").classList.remove("hidden");$("confirmHeading").textContent=a?"登録内容を確認":"手動登録";$("title").value=a?.title||"";$("status").value="視聴予定";$("favorite").checked=false;$("rating").value="";$("memo").value="";const image=$("previewPoster");image.classList.toggle("hidden",!a?.coverUrl);if(a?.coverUrl)image.src=a.coverUrl;window.scrollTo({top:0,behavior:"smooth"})}
+$("manual").onclick=()=>openConfirmation(null);$("back").onclick=()=>{$("confirmPanel").classList.add("hidden");$("searchPanel").classList.remove("hidden")};
+$("save").onclick=async()=>{if(!db||busy)return;const title=$("title").value.trim();if(!title){alert("作品名を入力してください");return}if(selected&&anime.some(a=>a.source===selected.source&&a.externalId===selected.externalId)&&!confirm("この作品は登録済みです。別の作品として登録しますか？"))return;const entry={id:crypto.randomUUID(),title,status:$("status").value,favorite:$("favorite").checked,rating:$("rating").value?Number($("rating").value):null,memo:$("memo").value,coverUrl:selected?.coverUrl||"",source:selected?.source||null,externalId:selected?.externalId||null,createdAt:new Date().toISOString()};busy=true;$("save").disabled=true;try{const updated=[...anime,entry];await saveAll(updated);anime=updated;$("confirmPanel").classList.add("hidden");$("searchPanel").classList.remove("hidden");$("externalQuery").value="";results=[];displayResults();show("list");message("保存しました")}catch(e){console.error(e);alert("保存に失敗しました。入力内容は残っています。")}finally{busy=false;if(db)$("save").disabled=false}};
+show("list");initialize();
 </script>
 </body>
 </html>
