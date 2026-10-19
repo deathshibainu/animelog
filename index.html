@@ -15,10 +15,10 @@
 <main>
 <section id="listPage"><h2>アニメ一覧</h2><input id="search" type="search" placeholder="登録済みの作品名で検索"><div id="animeList"></div></section>
 <section id="favPage" class="hidden"><h2>お気に入り</h2><div id="favList"></div></section>
-<section id="addPage" class="hidden"><h2>作品を登録</h2><div id="searchPanel" class="panel"><label for="externalQuery">アニメを検索</label><input id="externalQuery" type="search" autocomplete="off" placeholder="作品名を入力（例：フリーレン）"><div id="searchMessage" class="mutedline">検索すると候補が表示されます。</div><div id="results"></div><button id="more" class="primary subtle hidden">もっと見る</button><hr style="border:0;border-top:1px solid #3d3350;margin:18px 0"><button id="manual" class="primary subtle">候補がない場合は手動登録</button></div>
+<section id="addPage" class="hidden"><h2>作品を登録</h2><div id="searchPanel" class="panel"><label for="externalQuery">アニメを検索</label><input id="externalQuery" type="search" autocomplete="off" placeholder="作品名を入力（例：フリーレン）"><div id="searchMessage" class="mutedline" role="status" aria-live="polite">検索すると候補が表示されます。</div><button id="retrySearch" class="subtle hidden" type="button">もう一度検索</button><div id="results"></div><button id="more" class="primary subtle hidden">もっと見る</button><hr style="border:0;border-top:1px solid #3d3350;margin:18px 0"><button id="manual" class="primary subtle">候補がない場合は手動登録</button></div>
 <div id="confirmPanel" class="panel hidden"><h2 id="confirmHeading">登録内容の確認</h2><img id="previewPoster" class="poster large hidden" alt="作品画像"><label for="title">作品名</label><input id="title" placeholder="作品名"><label for="status">視聴状況</label><select id="status"><option>視聴予定</option><option>視聴中</option><option>視聴済み</option><option>中断</option></select><label for="rating">評価（任意）</label><select id="rating"><option value="">未評価</option></select><label><input id="favorite" type="checkbox" style="width:auto;margin-right:8px">お気に入りにする</label><label for="memo">メモ（任意）</label><textarea id="memo"></textarea><div class="stack"><button id="back" class="subtle">戻る</button><button id="save" disabled>登録する</button></div></div>
 <p class="muted">外部検索にはインターネット接続が必要です。保存はiPhone内のIndexedDBで行います。</p></section>
-<section id="settingsPage" class="hidden"><h2>設定</h2><div class="panel"><strong>AnimeLog</strong><p class="muted">検索改善・IndexedDB保存のテスト版</p><p>登録した作品・評価・お気に入りはこの端末に保存されます。</p></div></section>
+<section id="settingsPage" class="hidden"><h2>設定</h2><div class="panel"><strong>AnimeLog</strong><p class="muted">検索機能の最終調整版・IndexedDB保存（読み仮名は一部作品に対応）</p><p>登録した作品・評価・お気に入りはこの端末に保存されます。</p></div></section>
 </main>
 <nav aria-label="メインメニュー"><button class="active" data-page="list"><span>☷</span>一覧</button><button data-page="fav"><span>♥</span>お気に入り</button><button data-page="add"><span>＋</span>登録</button><button data-page="settings"><span>⚙</span>設定</button></nav>
 <script>
@@ -41,39 +41,103 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.
 const aniQuery=`query ($search:String,$page:Int){Page(page:$page,perPage:20){pageInfo{hasNextPage}media(search:$search,type:ANIME){id title{native romaji english}synonyms coverImage{large}format}}}`;
 function kanaToKatakana(s){return String(s||"").replace(/[\u3041-\u3096]/g,c=>String.fromCharCode(c.charCodeAt(0)+96))}
 function searchKey(s){return normalizeKana(s).replace(/[\s\u3000・!！?？:：\-ー]/g,"")}
-// 外部DBに読みが無い作品は、よく使う別名を補助する。後で追加可能。
+// 読みを明示した補助辞書。すべての作品の読みを自動判定するものではありません。
 const aliasPairs=[
   ["ぶりーち","BLEACH"],["あんさつきょうしつ","暗殺教室"],
   ["どらごんぼーる","ドラゴンボール"],["ふりーれん","葬送のフリーレン"],
-  ["ぎるどのうけつけじょう","ギルドの受付嬢ですが、残業は嫌なのでボスをソロ討伐しようと思います"]
+  ["ぎるどのうけつけじょう","ギルドの受付嬢ですが、残業は嫌なのでボスをソロ討伐しようと思います"],
+  ["ぎるどの","ギルドの受付嬢ですが、残業は嫌なのでボスをソロ討伐しようと思います"],
+  ["しんげきのきょじん","進撃の巨人"],["きめつのやいば","鬼滅の刃"],
+  ["じゅじゅつかいせん","呪術廻戦"],["ぼくのひーろーあかでみあ","僕のヒーローアカデミア"],
+  ["やくそくのねばーらんど","約束のネバーランド"],["おしのこ","【推しの子】"],
+  ["そうそうのふりーれん","葬送のフリーレン"],["すぱいふぁみりー","SPY×FAMILY"],
+  ["わんぴーす","ONE PIECE"],["なると","NARUTO"],
+  ["はがねのれんきんじゅつし","鋼の錬金術師"],["とうきょうぐーる","東京喰種"],
+  ["てんせいしたらすらいむだったけん","転生したらスライムだった件"],
+  ["むしょくてんせい","無職転生"],["ようこそじつりょくしじょうしゅぎのきょうしつへ","ようこそ実力至上主義の教室へ"],
+  ["このすば","この素晴らしい世界に祝福を！"],["はいきゅー","ハイキュー!!"]
 ];
-function aliasFor(input){const q=searchKey(input);if(q.length<3)return null;const match=aliasPairs.find(([reading])=>searchKey(reading).startsWith(q));return match?match[1]:null}
-async function fetchTimed(url,options={}){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),7500);try{return await fetch(url,{...options,signal:controller.signal})}finally{clearTimeout(timer)}}
+function aliasFor(input){
+ const q=searchKey(input);
+ if(q.length<3)return [];
+ return [...new Set(aliasPairs.filter(([reading,title])=>searchKey(reading).startsWith(q)||searchKey(title).startsWith(q)).map(([,title])=>title))].slice(0,3);
+}
+async function fetchTimed(url,options={}){
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),7000);
+ try{return await Promise.race([
+   fetch(url,{...options,signal:controller.signal}),
+   new Promise((_,reject)=>setTimeout(()=>reject(new Error("通信時間切れ")),7200))
+ ])}finally{clearTimeout(timer)}
+}
 async function anilist(q,page){const response=await fetchTimed("https://graphql.anilist.co",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({query:aniQuery,variables:{search:q,page}})});if(!response.ok)throw Error("AniList HTTP "+response.status);const json=await response.json();if(json.errors?.length)throw Error("AniList APIエラー");const data=json.data?.Page;if(!data)throw Error("AniListのデータがありません");return{items:data.media.map(m=>({key:"anilist:"+m.id,title:m.title.native||m.title.romaji||m.title.english||"",names:[m.title.native,m.title.romaji,m.title.english,...(m.synonyms||[])].filter(Boolean),coverUrl:m.coverImage?.large||"",format:m.format||"",source:"AniList",externalId:m.id})),more:!!data.pageInfo?.hasNextPage}}
 async function jikan(q,page){const url="https://api.jikan.moe/v4/anime?"+new URLSearchParams({q,limit:"20",page:String(page)});const response=await fetchTimed(url);if(!response.ok)throw Error("Jikan HTTP "+response.status);const json=await response.json();return{items:(json.data||[]).map(m=>({key:"jikan:"+m.mal_id,title:m.title_japanese||m.title||"",names:[m.title_japanese,m.title,m.title_english,...(m.title_synonyms||[])].filter(Boolean),coverUrl:m.images?.jpg?.large_image_url||m.images?.jpg?.image_url||"",format:m.type||"",source:"Jikan",externalId:m.mal_id})),more:!!json.pagination?.has_next_page}}
-let source="AniList",searchMoreQuery="";
-function relevance(a,typed,alias){const names=a.names?.length?a.names:[a.title];const words=[typed,alias].filter(Boolean).map(searchKey);let max=0;for(const n of names){const value=searchKey(n);for(const q of words){if(!q)continue;if(value===q)max=Math.max(max,100);else if(value.startsWith(q))max=Math.max(max,80);else if(value.includes(q))max=Math.max(max,45)}}return max}
-function displayResults(){const box=$("results");box.replaceChildren();results.forEach(a=>{const row=document.createElement("button");row.className="result choice";if(a.coverUrl)row.append(makePoster(a.coverUrl));const info=document.createElement("div");info.className="grow";const title=document.createElement("strong");title.textContent=a.title;const extra=document.createElement("div");extra.className="mutedline";extra.textContent=(a.format||"アニメ")+" ・ "+a.source+(anime.some(x=>x.source===a.source&&x.externalId===a.externalId)?" ・ 登録済み":"");info.append(title,extra);row.append(info);row.onclick=()=>openConfirmation(a);box.append(row)});$("more").classList.toggle("hidden",!hasMore)}
-async function runSearch(page=1){const typed=$("externalQuery").value.trim();if(!typed){++searchToken;results=[];hasMore=false;displayResults();$("searchMessage").textContent="作品名を入力してください";return}const token=++searchToken;const alias=aliasFor(typed);$("searchMessage").textContent="検索中…";$("more").disabled=true;
-try{
- if(page>1){const data=await anilist(searchMoreQuery||typed,page);if(token!==searchToken)return;const seen=new Set(results.map(a=>a.key));for(const item of data.items)if(!seen.has(item.key)){seen.add(item.key);results.push(item)};searchPage=page;hasMore=data.more;displayResults();$("searchMessage").textContent=results.length+"件表示（追加検索できます）";return}
- // 入力が途中でも検索を続ける。片方のサービスが失敗しても、他方の結果を利用する。
- const terms=[typed];if(alias&&!terms.some(x=>searchKey(x)===searchKey(alias)))terms.push(alias);
- // 表記のゆれに対応し、漢字・カタカナの作品名も検索する。
- if(/[\u3041-\u3096]/.test(typed)&&!terms.includes(kanaToKatakana(typed)))terms.push(kanaToKatakana(typed));
- const jobs=terms.slice(0,3).map(term=>({type:"AniList",term,promise:anilist(term,1)}));
- jobs.push({type:"Jikan",term:alias||typed,promise:jikan(alias||typed,1)});
- const settled=await Promise.allSettled(jobs.map(j=>j.promise));if(token!==searchToken)return;
- const merged=new Map();let anySuccess=false,more=false;
- settled.forEach((r,i)=>{if(r.status!=="fulfilled")return;anySuccess=true;const data=r.value;if(i===0)more=data.more;for(const item of data.items){const fingerprint=searchKey(item.title);const existing=merged.get(fingerprint);if(!existing||item.source==="AniList")merged.set(fingerprint,item)}});
- if(!anySuccess)throw Error("検索先から応答がありません");
- results=[...merged.values()].sort((a,b)=>relevance(b,typed,alias)-relevance(a,typed,alias)).slice(0,60);
- searchPage=1;searchMoreQuery=typed;hasMore=more;source="AniList＋Jikan";displayResults();
- $("searchMessage").textContent=results.length?results.length+"件表示（複数の検索先）"+(alias?"・読み仮名の候補も検索":""):"候補がありません。別の名前で検索するか、手動登録してください。";
- if(settled.some(r=>r.status==="rejected"))$("searchMessage").textContent+=" ※一部の検索先は応答しませんでした";
-}catch(e){if(token!==searchToken)return;console.error(e);$("searchMessage").textContent="検索が時間内に完了しませんでした。文字を変更して再検索してください。";if(page===1){results=[];hasMore=false;displayResults()}}
-finally{if(token===searchToken)$("more").disabled=false}}
-$("externalQuery").addEventListener("input",()=>{clearTimeout(searchTimer);++searchToken;const q=$("externalQuery").value.trim();$("searchMessage").textContent=q?"入力待機中…":"検索すると候補が表示されます。";results=[];hasMore=false;displayResults();if(q)searchTimer=setTimeout(()=>runSearch(1),650)});
+let source="AniList",searchMoreQuery="",lastInput="";
+function relevance(a,typed,aliases){
+ const names=a.names?.length?a.names:[a.title];const words=[typed,...aliases].filter(Boolean).map(searchKey);let max=0;
+ for(const n of names){const value=searchKey(n);for(const q of words){if(!q)continue;if(value===q)max=Math.max(max,110);else if(value.startsWith(q))max=Math.max(max,85);else if(value.includes(q))max=Math.max(max,50)}}
+ return max;
+}
+function displayResults(){
+ const box=$("results");box.replaceChildren();
+ results.forEach(a=>{const row=document.createElement("button");row.className="result choice";if(a.coverUrl)row.append(makePoster(a.coverUrl));const info=document.createElement("div");info.className="grow";const title=document.createElement("strong");title.textContent=a.title;const extra=document.createElement("div");extra.className="mutedline";extra.textContent=(a.format||"アニメ")+" ・ "+a.source+(anime.some(x=>x.source===a.source&&x.externalId===a.externalId)?" ・ 登録済み":"");info.append(title,extra);row.append(info);row.onclick=()=>openConfirmation(a);box.append(row)});
+ $("more").classList.toggle("hidden",!hasMore);$("retrySearch").classList.add("hidden");
+}
+async function runSearch(page=1){
+ const typed=$("externalQuery").value.trim();lastInput=typed;
+ if(!typed){++searchToken;results=[];hasMore=false;displayResults();$("searchMessage").textContent="作品名を入力してください";return}
+ const token=++searchToken,aliases=aliasFor(typed);
+ $("searchMessage").textContent="検索中…";$("retrySearch").classList.add("hidden");$("more").disabled=true;
+ try{
+  if(page>1){
+   const data=await anilist(searchMoreQuery||typed,page);if(token!==searchToken)return;
+   const seen=new Set(results.map(a=>a.key));for(const item of data.items){if(!seen.has(item.key)){seen.add(item.key);results.push(item)}}
+   searchPage=page;hasMore=data.more;displayResults();$("searchMessage").textContent=results.length+"件表示（もっと見るで追加検索）";return;
+  }
+  // 入力途中も再検索する。前の入力への通信結果は採用しない。
+  const terms=[typed];
+  if(/[\u3041-\u3096]/.test(typed)){const katakana=kanaToKatakana(typed);if(!terms.includes(katakana))terms.push(katakana)}
+  aliases.forEach(a=>{if(!terms.includes(a))terms.push(a)});
+  const jobs=[];
+  for(const term of terms.slice(0,4))jobs.push({source:"AniList",promise:anilist(term,1)});
+  // AniListが別作品を返した場合もJikanを検索する。
+  jobs.push({source:"Jikan",promise:jikan(aliases[0]||typed,1)});
+  const settled=await Promise.allSettled(jobs.map(j=>j.promise));
+  if(token!==searchToken)return;
+  const merged=new Map();let success=0,more=false;
+  settled.forEach((r,i)=>{
+    if(r.status!=="fulfilled")return;success++;
+    if(i===0)more=r.value.more;
+    for(const item of r.value.items){
+      const fingerprint=searchKey(item.title);
+      const existing=merged.get(fingerprint);
+      if(!existing||item.source==="AniList")merged.set(fingerprint,item);
+    }
+  });
+  if(!success)throw Error("すべての検索先が応答しませんでした");
+  results=[...merged.values()].sort((a,b)=>relevance(b,typed,aliases)-relevance(a,typed,aliases)).slice(0,70);
+  searchPage=1;searchMoreQuery=typed;hasMore=more;source="AniList＋Jikan";
+  displayResults();
+  $("searchMessage").textContent=results.length?results.length+"件表示（AniList・Jikan）"+(aliases.length?"・読み仮名候補を含む":""):"候補がありません。別の名前で検索するか、手動登録してください。";
+  if(success<jobs.length)$("searchMessage").textContent+=" ※一部の検索先は応答しませんでした";
+ }catch(e){
+  if(token!==searchToken)return;
+  console.error(e);$("searchMessage").textContent="検索先が応答しませんでした。再試行するか、手動登録してください。";
+  $("retrySearch").classList.remove("hidden");
+  if(page===1){results=[];hasMore=false;displayResults();$("retrySearch").classList.remove("hidden")}
+ }finally{if(token===searchToken)$("more").disabled=false}
+}
+function queueSearch(){
+ clearTimeout(searchTimer);++searchToken;
+ const q=$("externalQuery").value.trim();$("searchMessage").textContent=q?"入力待機中…":"検索すると候補が表示されます。";
+ results=[];hasMore=false;displayResults();
+ if(q)searchTimer=setTimeout(()=>runSearch(1),550);
+}
+let composing=false;
+$("externalQuery").addEventListener("compositionstart",()=>{composing=true;clearTimeout(searchTimer);++searchToken});
+$("externalQuery").addEventListener("compositionend",()=>{composing=false;queueSearch()});
+$("externalQuery").addEventListener("input",()=>{if(!composing)queueSearch()});
+$("retrySearch").onclick=()=>runSearch(1);
 $("more").onclick=()=>runSearch(searchPage+1);
 for(let i=1;i<=10;i++){const o=document.createElement("option");o.value=String(i);o.textContent=i+"/10";$("rating").append(o)}
 function openConfirmation(a){selected=a;$("searchPanel").classList.add("hidden");$("confirmPanel").classList.remove("hidden");$("confirmHeading").textContent=a?"登録内容を確認":"手動登録";$("title").value=a?.title||"";$("status").value="視聴予定";$("favorite").checked=false;$("rating").value="";$("memo").value="";const image=$("previewPoster");image.classList.toggle("hidden",!a?.coverUrl);if(a?.coverUrl)image.src=a.coverUrl;window.scrollTo({top:0,behavior:"smooth"})}
