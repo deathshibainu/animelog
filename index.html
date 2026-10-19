@@ -183,10 +183,234 @@ main{padding-top:18px!important}
 #favList.gridview .meta-row{padding-right:64px;row-gap:7px}
 #favList.gridview .heart{right:10px;bottom:10px}
 
+
+/* AnimeLog UI 2.1 — Obsidian Matte: visual-only overrides */
+:root{
+  --bg:#101216;--panel:#1B2027;--line:#343C47;
+  --accent:#A8B5C6;--muted:#A7ADBB;
+  color-scheme:dark;
+}
+html{background:#101216}
+body{
+  background:#101216!important;
+  color:#ECEEF1;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+header{
+  background:#101216!important;
+  border-bottom:1px solid #293039!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+@media(display-mode:standalone){
+  header{background:#101216!important}
+}
+header h1{
+  color:#ECEEF1!important;
+  text-shadow:none!important;
+  font-weight:760;
+}
+header h1 .brand-accent{
+  color:#B2C0D2!important;
+  text-shadow:none!important;
+}
+header small{
+  color:#858E9C!important;
+  letter-spacing:.12em;
+}
+#notice{color:#838C99}
+h2,.section-header h2{color:#ECEEF1}
+.section-eyebrow{color:#8F9BAA}
+.panel,.item,.result{
+  background:#1B2027!important;
+  border:1px solid #343C47!important;
+  box-shadow:none!important;
+}
+.item:active{
+  box-shadow:none!important;
+  background:#232A33!important;
+  border-color:#67788E!important;
+}
+.item strong,.result strong{color:#EEF0F4}
+button{
+  background:#303A47;
+  color:#E9EDF2;
+  border:1px solid #465260;
+  box-shadow:none!important;
+  text-shadow:none!important;
+}
+button:active{filter:brightness(1.10)}
+.glass-button,.subtle{
+  background:#242B34!important;
+  color:#D7DEE7!important;
+  border-color:#3C4653!important;
+}
+.danger{
+  background:#40292D!important;
+  color:#F1C3C5!important;
+  border-color:#644044!important;
+}
+input,select,textarea{
+  background:#171C23!important;
+  border:1px solid #3C4653!important;
+  color:#ECEEF1!important;
+  box-shadow:none!important;
+}
+input:focus,select:focus,textarea:focus{
+  outline:2px solid #899AB1;
+  border-color:#899AB1;
+}
+input::placeholder,textarea::placeholder{color:#828D9B}
+input[type=checkbox],.bulk-check{accent-color:#A8B5C6}
+label,.toolbar label{color:#BBC3CD}
+.muted,.hint,.mutedline,.backup-note,.count{color:#A7AFBB}
+.item .poster{box-shadow:none!important}
+.heart{
+  color:#B9C4D1!important;
+  filter:none!important;
+  text-shadow:none!important;
+}
+.gridview .heart{
+  background:#252D37!important;
+  border-color:#3C4858!important;
+}
+.status{
+  border-radius:7px;
+  box-shadow:none!important;
+}
+.status[data-status="視聴予定"]{
+  color:#C6CBD4;background:#30343D;border-color:#444A55;
+}
+.status[data-status="視聴中"]{
+  color:#B1C9DD;background:#263744;border-color:#3C5366;
+}
+.status[data-status="視聴済み"]{
+  color:#AFD4C6;background:#243B33;border-color:#3B5C51;
+}
+.status[data-status="中断"]{
+  color:#DFC2B1;background:#43332F;border-color:#59473E;
+}
+.score-pill{
+  color:#D5DCE5;
+  background:#303A46;
+  border-color:#435162;
+  box-shadow:none!important;
+}
+.score-pill .star{color:#E2C68F}
+.viewbar .selected{
+  background:#A8B5C6!important;
+  border-color:#A8B5C6!important;
+  color:#10151B!important;
+  box-shadow:none!important;
+}
+.viewbar .inactive{
+  background:#252D38!important;
+  color:#BCC5D0;
+  border-color:#3F4A58;
+}
+.kana-jump button{
+  background:#1C222B!important;
+  border:1px solid #323C49!important;
+  color:#C0C8D3;
+  box-shadow:none!important;
+}
+.kana-jump button.chosen{
+  background:#A8B5C6!important;
+  border-color:#A8B5C6!important;
+  color:#10151B!important;
+  box-shadow:none!important;
+}
+.rating-control{
+  background:#1D242D!important;
+  border:1px solid #3F4B5A!important;
+  box-shadow:none!important;
+}
+.rating-heading>span{color:#A3AFBC}
+.rating-control .rating-value{
+  color:#E5EAF0!important;
+  text-shadow:none!important;
+}
+.rating-control input[type=range]::-webkit-slider-runnable-track{
+  background:linear-gradient(to right,#A8B5C6 0%,#889BAF var(--rating-fill,0%),#38424E var(--rating-fill,0%),#38424E 100%)!important;
+  box-shadow:none!important;
+  border:0!important;
+}
+.rating-control input[type=range]::-webkit-slider-thumb{
+  background:#E4E9F0!important;
+  border:3px solid #7E91A8!important;
+  box-shadow:0 1px 5px #0005!important;
+}
+.rating-control input[type=range]::-moz-range-track{
+  background:linear-gradient(to right,#A8B5C6 var(--rating-fill,0%),#38424E var(--rating-fill,0%))!important;
+}
+.rating-control input[type=range]::-moz-range-thumb{
+  background:#E4E9F0!important;border-color:#7E91A8!important;
+}
+.rating-control .rating-ends{color:#939EAC}
+.cover-picker{
+  background:#171D25!important;
+  border-color:#3C4652!important;
+}
+.premium-detail{
+  background:#1B2027!important;
+}
+.detail-art,.detail-art:has(img:not(.hidden)){
+  background:#202730!important;
+}
+.detail-art img{
+  border:1px solid #3B4655!important;
+  box-shadow:0 10px 25px #0006!important;
+}
+.premium-detail .detail-field dt{color:#9DA9B8}
+.detail-score-track,.status-track{background:#323B47!important}
+.detail-score-fill{
+  background:#A8B5C6!important;
+  box-shadow:none!important;
+}
+.stat-card{
+  background:#202630!important;
+  border:1px solid #36414F!important;
+  box-shadow:none!important;
+}
+.stat-card strong{color:#E4E9EF!important}
+.stat-card span{color:#9DA8B7!important}
+.status-fill{background:#A8B5C6!important}
+.status-fill[data-status="視聴中"]{background:#87AABD!important}
+.status-fill[data-status="視聴済み"]{background:#87B5A5!important}
+.status-fill[data-status="中断"]{background:#C4A08F!important}
+nav{
+  background:#141920!important;
+  border-top:1px solid #2F3945!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+nav button{
+  background:transparent!important;
+  color:#929EAD!important;
+  border:0!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+}
+nav button.active{
+  color:#E8EDF3!important;
+  text-shadow:none!important;
+}
+nav button.active:before{
+  background:#A8B5C6!important;
+  box-shadow:none!important;
+}
+.backup-preview{
+  background:#171D25!important;
+  border-color:#465361!important;
+}
+
 </style>
 </head>
 <body>
-<header><h1>Anime<span class="brand-accent">Log</span></h1><small>YOUR ANIME COLLECTION · OBSIDIAN</small></header>
+<header><h1>Anime<span class="brand-accent">Log</span></h1><small>YOUR ANIME COLLECTION · MATTE</small></header>
 <div id="notice" role="status">データを読み込んでいます…</div>
 <main>
 <section id="listPage"><div class="section-eyebrow">YOUR COLLECTION</div><div class="section-header"><h2>ライブラリ</h2><button type="button" id="bulkToggle" class="glass-button">複数選択</button></div><div id="bulkBar" class="panel hidden"><div class="bulk-head"><strong id="bulkCount">0件選択</strong><button type="button" id="bulkSelectAll" class="subtle">表示中を選択</button></div><select id="bulkStatus"><option value="">視聴状況を変更…</option><option>視聴予定</option><option>視聴中</option><option>視聴済み</option><option>中断</option></select><div class="stack"><button id="bulkApply" type="button">まとめて変更</button><button id="bulkDelete" type="button" class="danger">ゴミ箱へ</button></div></div><input id="search" type="search" placeholder="登録済みの作品名で検索"><div class="toolbar"><label for="listStatus">視聴状況<select id="listStatus"><option value="all">すべて</option><option>視聴予定</option><option>視聴中</option><option>視聴済み</option><option>中断</option></select></label><label for="listSort">並び替え<select id="listSort"><option value="kana">50音順</option><option value="rating">評価の高い順</option><option value="recent">登録の新しい順</option></select></label></div><div class="viewbar"><span class="count" id="listCount"></span><div><button id="viewList" type="button" class="selected">☷ 文字</button> <button id="viewGrid" type="button" class="inactive">▦ 画像</button></div></div><div class="kana-jump" id="kanaJump" aria-label="50音で絞り込み"></div><div id="animeList"></div></section>
