@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#171321">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="AnimeLog">
 <meta name="application-name" content="AnimeLog">
 <title>AnimeLog</title>
@@ -56,6 +56,13 @@ nav{background:rgba(27,21,39,.97);backdrop-filter:blur(24px);border-top:1px soli
 
 @media(min-width:600px){.gridview{grid-template-columns:repeat(3,minmax(0,1fr))}.stats-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
+
+/* v1.0: iPhone home-screen header protection */
+header{position:sticky;top:0;z-index:24;background:#1c142b;padding:17px 20px 14px;box-shadow:0 6px 24px #09051066}
+header h1{font-size:1.52rem;line-height:1.22;letter-spacing:-.045em}
+header small{display:block;font-size:.7rem;margin-top:3px;color:#cabddd}
+@media(display-mode:standalone){header{padding-top:calc(12px + env(safe-area-inset-top,0px));background:#1c142b}}
+#searchMessage{min-height:1.5em}
 </style>
 </head>
 <body>
@@ -199,55 +206,63 @@ function displayResults(){
  results.forEach(a=>{const row=document.createElement("button");row.className="result choice";if(a.coverUrl)row.append(makePoster(a.coverUrl));const info=document.createElement("div");info.className="grow";const title=document.createElement("strong");title.textContent=a.title;const extra=document.createElement("div");extra.className="mutedline";extra.textContent=(a.format||"アニメ")+" ・ "+a.source+(activeAnime().some(x=>x.source===a.source&&x.externalId===a.externalId)?" ・ 登録済み":"");info.append(title,extra);row.append(info);row.onclick=()=>openConfirmation(a);box.append(row)});
  $("more").classList.toggle("hidden",!hasMore);$("retrySearch").classList.add("hidden");
 }
+// Search results are painted as each source returns: a slow source no longer blocks fast results.
+const searchCache=new Map(),SEARCH_CACHE_MS=5*60*1000;
+function cachedSearch(key,task){
+ const cached=searchCache.get(key);
+ if(cached && Date.now()-cached.time<SEARCH_CACHE_MS)return cached.promise;
+ const promise=task().catch(err=>{searchCache.delete(key);throw err});
+ searchCache.set(key,{time:Date.now(),promise});
+ if(searchCache.size>45)searchCache.delete(searchCache.keys().next().value);
+ return promise;
+}
 async function runSearch(page=1){
  const typed=$("externalQuery").value.trim();lastInput=typed;
  if(!typed){++searchToken;results=[];hasMore=false;displayResults();$("searchMessage").textContent="作品名を入力してください";return}
  const token=++searchToken,aliases=aliasFor(typed);
  $("searchMessage").textContent="検索中…";$("retrySearch").classList.add("hidden");$("more").disabled=true;
- try{
-  if(page>1){
-   const data=await anilist(searchMoreQuery||typed,page);if(token!==searchToken)return;
+ if(page>1){
+  try{
+   const data=await cachedSearch("a:"+(searchMoreQuery||typed)+":"+page,()=>anilist(searchMoreQuery||typed,page));
+   if(token!==searchToken)return;
    const seen=new Set(results.map(a=>a.key));for(const item of data.items){if(!seen.has(item.key)){seen.add(item.key);results.push(item)}}
-   searchPage=page;hasMore=data.more;displayResults();$("searchMessage").textContent=results.length+"件表示（もっと見るで追加検索）";return;
-  }
-  // 入力途中も再検索する。前の入力への通信結果は採用しない。
-  const terms=[typed];
-  if(/[\u3041-\u3096]/.test(typed)){const katakana=kanaToKatakana(typed);if(!terms.includes(katakana))terms.push(katakana)}
-  aliases.forEach(a=>{if(!terms.includes(a))terms.push(a)});
-  const jobs=[];
-  for(const term of terms.slice(0,4))jobs.push({source:"AniList",promise:anilist(term,1)});
-  // AniListが別作品を返した場合もJikanを検索する。
-  jobs.push({source:"Jikan",promise:jikan(aliases[0]||typed,1)});
-  const settled=await Promise.allSettled(jobs.map(j=>j.promise));
-  if(token!==searchToken)return;
-  const merged=new Map();let success=0,more=false;
-  settled.forEach((r,i)=>{
-    if(r.status!=="fulfilled")return;success++;
-    if(i===0)more=r.value.more;
-    for(const item of r.value.items){
-      const fingerprint=searchKey(item.title);
-      const existing=merged.get(fingerprint);
-      if(!existing||item.source==="AniList")merged.set(fingerprint,item);
-    }
+   searchPage=page;hasMore=data.more;displayResults();$("searchMessage").textContent=results.length+"件表示（もっと見るで追加検索）";
+  }catch(err){if(token===searchToken){console.warn(err);$("searchMessage").textContent="追加候補を取得できませんでした。もう一度お試しください。"}}
+  finally{if(token===searchToken)$("more").disabled=false}
+  return;
+ }
+ results=[];hasMore=false;searchPage=1;searchMoreQuery=typed;displayResults();
+ const terms=[typed];
+ if(/[\u3041-\u3096]/.test(typed)){const katakana=kanaToKatakana(typed);if(!terms.includes(katakana))terms.push(katakana)}
+ aliases.forEach(a=>{if(!terms.includes(a))terms.push(a)});
+ const jobs=[{source:"AniList",key:"a:"+terms[0]+":1",task:()=>anilist(terms[0],1),primary:true}];
+ // Only one alternative query to avoid unnecessary API load while typing.
+ const alternative=terms.find(t=>t!==typed&&t!==kanaToKatakana(typed));
+ if(alternative)jobs.push({source:"AniList",key:"a:"+alternative+":1",task:()=>anilist(alternative,1)});
+ if(typed.length>=2)jobs.push({source:"Jikan",key:"j:"+(aliases[0]||typed)+":1",task:()=>jikan(aliases[0]||typed,1)});
+ const merged=new Map();let finished=0,success=0;
+ jobs.forEach(job=>{
+  cachedSearch(job.key,job.task).then(data=>{
+   if(token!==searchToken)return;
+   success++;
+   if(job.primary){hasMore=data.more;source="AniList＋Jikan"}
+   for(const item of data.items){const key=searchKey(item.title)||item.key;const old=merged.get(key);if(!old||item.source==="AniList")merged.set(key,item)}
+   results=[...merged.values()].sort((a,b)=>relevance(b,typed,aliases)-relevance(a,typed,aliases)).slice(0,70);
+   displayResults();
+  }).catch(err=>{if(token===searchToken)console.warn("検索先の応答に失敗:",job.source,err)}).finally(()=>{
+   if(token!==searchToken)return;
+   finished++;
+   if(results.length){$("searchMessage").textContent=results.length+"件表示"+(finished<jobs.length?"・ほかの候補も検索中…":"")}
+   else if(finished===jobs.length){$("searchMessage").textContent=success?"候補がありません。別の名前か手動登録をお試しください。":"検索先が応答しませんでした。再試行か手動登録をお試しください。";$("retrySearch").classList.toggle("hidden",success>0)}
+   if(finished===jobs.length)$("more").disabled=false;
   });
-  if(!success)throw Error("すべての検索先が応答しませんでした");
-  results=[...merged.values()].sort((a,b)=>relevance(b,typed,aliases)-relevance(a,typed,aliases)).slice(0,70);
-  searchPage=1;searchMoreQuery=typed;hasMore=more;source="AniList＋Jikan";
-  displayResults();
-  $("searchMessage").textContent=results.length?results.length+"件表示（AniList・Jikan）"+(aliases.length?"・読み仮名候補を含む":""):"候補がありません。別の名前で検索するか、手動登録してください。";
-  if(success<jobs.length)$("searchMessage").textContent+=" ※一部の検索先は応答しませんでした";
- }catch(e){
-  if(token!==searchToken)return;
-  console.error(e);$("searchMessage").textContent="検索先が応答しませんでした。再試行するか、手動登録してください。";
-  $("retrySearch").classList.remove("hidden");
-  if(page===1){results=[];hasMore=false;displayResults();$("retrySearch").classList.remove("hidden")}
- }finally{if(token===searchToken)$("more").disabled=false}
+ });
 }
 function queueSearch(){
  clearTimeout(searchTimer);++searchToken;
  const q=$("externalQuery").value.trim();$("searchMessage").textContent=q?"入力待機中…":"検索すると候補が表示されます。";
  results=[];hasMore=false;displayResults();
- if(q)searchTimer=setTimeout(()=>runSearch(1),550);
+ if(q)searchTimer=setTimeout(()=>runSearch(1),300);
 }
 let composing=false;
 $("externalQuery").addEventListener("compositionstart",()=>{composing=true;clearTimeout(searchTimer);++searchToken});
