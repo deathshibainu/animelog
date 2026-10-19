@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#171321">
+<meta name="theme-color" content="#08090D">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="AnimeLog">
@@ -63,10 +63,107 @@ header h1{font-size:1.52rem;line-height:1.22;letter-spacing:-.045em}
 header small{display:block;font-size:.7rem;margin-top:3px;color:#cabddd}
 @media(display-mode:standalone){header{padding-top:calc(12px + env(safe-area-inset-top,0px));background:#1c142b}}
 #searchMessage{min-height:1.5em}
+
+
+/* AnimeLog UI 2.0 — OBSIDIAN / local-only, preserves data model */
+:root{--obs-bg:#08090d;--obs-surface:#111723;--obs-card:#1a1f2b;--obs-line:#344157;--obs-accent:#8c98b2;--obs-bright:#c5c8e9;--obs-text:#f3f4f8;--obs-sub:#a7adbb;--bg:var(--obs-bg);--panel:var(--obs-card);--line:var(--obs-line);--accent:var(--obs-accent);--muted:var(--obs-sub);font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Yu Gothic',system-ui,sans-serif}
+html{background:#08090d;scroll-padding-top:105px}
+body{background:radial-gradient(ellipse at 80% -12%,#1b283b 0%,transparent 48%),linear-gradient(180deg,#0b0e15 0%,#08090d 45%,#08090d 100%);color:var(--obs-text);min-height:100vh}
+header{position:sticky;top:0;z-index:24;padding:15px 19px 13px;background:rgba(10,14,21,.96);border-bottom:1px solid #344053a8;box-shadow:0 12px 35px #0007;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+header h1{font-family:ui-serif,Georgia,'Hiragino Mincho ProN',serif;color:#f3f4fc;font-size:1.69rem;font-weight:750;letter-spacing:-.045em;line-height:1.3;text-shadow:0 0 24px #849bd345}
+header h1 .brand-accent{color:#adbadc;text-shadow:0 0 15px #8babe988}
+header small{color:#9daac0;font-size:.63rem;letter-spacing:.19em;margin-top:2px;display:block;font-weight:700}
+@media(display-mode:standalone){header{padding-top:calc(env(safe-area-inset-top,0px) + 12px);background:rgba(10,14,21,.97)}}
+#notice{color:#95a6bf;font-size:.69rem;padding:7px 20px;min-height:22px}
+main{max-width:760px;padding:10px 16px calc(135px + env(safe-area-inset-bottom,0px))}
+h2{font-weight:780;color:#f4f6fc;letter-spacing:-.045em}
+.section-eyebrow{color:#91a4c7;letter-spacing:.18em;font-size:.65rem}
+.section-header h2{font-size:1.65rem}
+.panel,.item,.result{background:linear-gradient(145deg,#1b2331 0%,#131925 63%,#111620 100%);border:1px solid #354258;border-radius:17px;box-shadow:inset 0 1px 0 #eaf0ff0a,0 10px 26px #0004}
+.panel{padding:18px}
+.item{margin-bottom:10px;padding:10px 11px;transition:border-color .2s,transform .2s,box-shadow .2s}
+.item:active{transform:scale(.987);border-color:#7c9ed2;box-shadow:0 0 16px #6c8bc02c}
+.item-open{gap:12px}
+.item strong{font-size:.94rem;letter-spacing:-.025em;line-height:1.4;color:#f8f9ff}
+.item .poster{width:70px;height:97px;border-radius:10px;box-shadow:0 4px 15px #0008}
+.heart{color:#b9c7e6;font-size:1.55rem;filter:drop-shadow(0 0 6px #668bc750);transition:transform .17s}.heart:active{transform:scale(1.24)}
+.status{font-size:.71rem;font-weight:750;border:1px solid #56617466;border-radius:7px;min-height:27px;align-items:center}
+.status[data-status='視聴予定']{background:#273142;color:#c3ccdc;border-color:#3d4b61}
+.status[data-status='視聴中']{background:#173654;color:#a7d7fa;border-color:#2b6386}
+.status[data-status='視聴済み']{background:#11473e;color:#9be6d3;border-color:#237769}
+.status[data-status='中断']{background:#43332f;color:#e7baa5;border-color:#674e44}
+button{background:linear-gradient(145deg,#7285a8,#536884);border:1px solid #91a5c355;border-radius:12px;color:#f5f7ff;font-weight:720;box-shadow:inset 0 1px 0 #ffffff20;transition:filter .16s,transform .16s,border-color .16s}
+button:active{filter:brightness(1.17);transform:scale(.98)}button:disabled{opacity:.48}
+.subtle,.glass-button{background:linear-gradient(145deg,#293449,#1a2537);border:1px solid #495c77;color:#d9e0ef;box-shadow:inset 0 1px 0 #ffffff0c}
+.glass-button{padding:10px 12px;font-size:.79rem}
+.danger{background:linear-gradient(130deg,#512b36,#42202b);border-color:#875260;color:#ffd4dd}
+input,select,textarea{background:#151d2b;border:1px solid #41506a;border-radius:12px;color:#f3f5fa;box-shadow:inset 0 1px 4px #0005}
+input:focus,select:focus,textarea:focus{outline:2px solid #8faddd;outline-offset:1px;border-color:#8ca4c4}
+input::placeholder,textarea::placeholder{color:#8592a8}
+input[type=checkbox]{accent-color:#95aedb}
+label,.toolbar label{color:#c3cede}
+.muted,.hint,.mutedline,.backup-note{color:#aab5c7}
+.toolbar select{min-height:48px}
+.viewbar .selected{background:linear-gradient(145deg,#7e94c2,#5a6e93);color:#fff;box-shadow:0 3px 15px #809ac035}
+.viewbar .inactive{background:#1b2434;color:#b8c4d8}
+.kana-jump{gap:7px;padding:5px 0 12px;margin:12px 0}
+.kana-jump button{border:1px solid #364355;background:#1a2231;border-radius:11px;min-width:39px;height:39px;color:#bbc6d9;padding:7px 10px}
+.kana-jump button.chosen{background:linear-gradient(145deg,#8299c5,#566b92);border-color:#a9bee6;color:#fff;box-shadow:0 0 13px #8aa7e04a}
+.gridview{gap:11px}
+.gridview .item{border-radius:17px;padding:9px;position:relative;overflow:hidden}
+.gridview .poster,.gridview .no-poster{width:100%;aspect-ratio:3/4.1;max-height:none;height:auto;object-fit:cover;object-position:center top;border-radius:11px;margin-bottom:11px;box-shadow:none}
+.gridview .item .grow{padding:1px 4px 5px}
+.gridview .item strong{font-size:.87rem;min-height:2.5em;line-height:1.35}
+.gridview .heart{position:absolute;right:12px;bottom:9px;background:#182334ce;padding:6px 9px;border-radius:10px;border:1px solid #475a7655;font-size:1.3rem;float:none}
+.score-pill{display:inline-flex;margin-top:5px;color:#dfebff;background:#27384db8;border:1px solid #546b8b66;font-size:.75rem;font-weight:800;align-items:center;gap:4px;border-radius:8px;padding:4px 7px;font-variant-numeric:tabular-nums}
+.score-pill .star{color:#f4d68c}
+.gridview .score-pill{margin-bottom:9px}
+#favList.gridview.single-favorite{grid-template-columns:minmax(0,248px)!important;justify-content:center}
+#favList.gridview .poster,#favList.gridview .no-poster{max-height:285px;aspect-ratio:3/3.7}
+#favList.gridview .item{margin:0}
+.rating-control{background:linear-gradient(135deg,#192537,#131c29);border:1px solid #405570;border-radius:17px;box-shadow:inset 0 1px 0 #ffffff0c;padding:16px}
+.rating-heading>span{color:#9eb4d5;letter-spacing:.16em}
+.rating-control .rating-value{color:#d3e0fa;text-shadow:0 0 18px #7da0d670;font-size:1.45rem}
+.rating-control input[type=range]::-webkit-slider-runnable-track{height:8px;background:linear-gradient(to right,#d3e3ff 0%,#7c9ed9 var(--rating-fill,0%),#33425b var(--rating-fill,0%),#33425b 100%);box-shadow:0 0 9px #94b9fb2b;border:1px solid #a3b8d522}
+.rating-control input[type=range]::-webkit-slider-thumb{width:21px;height:21px;border:3px solid #8ca7d5;background:#e5edff;box-shadow:0 0 0 4px #7e9fd62b,0 0 12px #a3bffa66}
+.rating-control input[type=range]::-moz-range-track{background:linear-gradient(to right,#a3bde4 var(--rating-fill,0%),#33425b var(--rating-fill,0%))}
+.rating-control input[type=range]::-moz-range-thumb{border-color:#8ca7d5;background:#e5edff}
+.rating-control .rating-ends{color:#9caec6}
+.cover-picker{background:#111a26;border:1px solid #35445d;border-radius:15px}
+.premium-detail{background:linear-gradient(180deg,#111827,#111721)!important}
+.detail-art{background:linear-gradient(145deg,#21314a,#0a1019)}
+.detail-art:has(img:not(.hidden)){padding:20px;background:radial-gradient(circle at 50% 25%,#304b72,#131e2d 58%,#0b121c)}
+.detail-art img{box-shadow:0 17px 40px #000b;border:1px solid #a3b7d63f}
+.premium-detail>h2{font-size:1.48rem}
+.premium-detail .detail-field dt{color:#9db0ca}
+.detail-score-track{height:7px;border-radius:30px;background:#283448;overflow:hidden;margin-top:12px}
+.detail-score-fill{height:100%;background:linear-gradient(90deg,#7d9cd1,#d8e7ff);border-radius:30px;box-shadow:0 0 12px #9abdfa77;transition:width .25s}
+.stats-grid{gap:11px}
+.stat-card{background:linear-gradient(145deg,#203149,#121b29);border:1px solid #415474;border-radius:17px}
+.stat-card strong{color:#e3edff;font-variant-numeric:tabular-nums}
+.stat-card span{color:#a7b6cd}
+.status-track{background:#29384c}
+.status-fill{background:#96b2e3}
+.status-fill[data-status='視聴中']{background:#75b7e7}
+.status-fill[data-status='視聴済み']{background:#5ac6ad}
+.status-fill[data-status='中断']{background:#db9c88}
+nav{background:rgba(12,17,26,.97);border-top:1px solid #3e526d;box-shadow:0 -7px 25px #0008;-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
+nav button{border:0;box-shadow:none;background:none;border-radius:0;color:#a0adc3;padding:12px 3px 11px;position:relative}
+nav button.active{color:#e4ecff;text-shadow:0 0 12px #99b9f8}
+nav button.active:before{content:'';position:absolute;top:0;left:34%;right:34%;height:2px;border-radius:2px;background:#abc6f6;box-shadow:0 0 8px #9bbcff}
+nav span{font-size:1.45rem}
+#searchPanel>.result,.result{border-radius:14px}
+#results .result{padding:11px 12px}
+#results .result:active{border-color:#8ca9d5}
+.backup-preview{border-color:#51647c;background:#101722}
+#settingsPage .panel h2{font-size:1.16rem}
+@media(max-width:390px){main{padding-left:13px;padding-right:13px}.gridview{gap:9px}.gridview .item{padding:7px}.item strong{font-size:.89rem}.viewbar button{padding:9px 10px;font-size:.84rem}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
+
 </style>
 </head>
 <body>
-<header><h1>AnimeLog</h1><small>自分だけのアニメ視聴管理アプリ</small></header>
+<header><h1>Anime<span class="brand-accent">Log</span></h1><small>YOUR ANIME COLLECTION · OBSIDIAN</small></header>
 <div id="notice" role="status">データを読み込んでいます…</div>
 <main>
 <section id="listPage"><div class="section-eyebrow">YOUR COLLECTION</div><div class="section-header"><h2>ライブラリ</h2><button type="button" id="bulkToggle" class="glass-button">複数選択</button></div><div id="bulkBar" class="panel hidden"><div class="bulk-head"><strong id="bulkCount">0件選択</strong><button type="button" id="bulkSelectAll" class="subtle">表示中を選択</button></div><select id="bulkStatus"><option value="">視聴状況を変更…</option><option>視聴予定</option><option>視聴中</option><option>視聴済み</option><option>中断</option></select><div class="stack"><button id="bulkApply" type="button">まとめて変更</button><button id="bulkDelete" type="button" class="danger">ゴミ箱へ</button></div></div><input id="search" type="search" placeholder="登録済みの作品名で検索"><div class="toolbar"><label for="listStatus">視聴状況<select id="listStatus"><option value="all">すべて</option><option>視聴予定</option><option>視聴中</option><option>視聴済み</option><option>中断</option></select></label><label for="listSort">並び替え<select id="listSort"><option value="kana">50音順</option><option value="rating">評価の高い順</option><option value="recent">登録の新しい順</option></select></label></div><div class="viewbar"><span class="count" id="listCount"></span><div><button id="viewList" type="button" class="selected">☷ 文字</button> <button id="viewGrid" type="button" class="inactive">▦ 画像</button></div></div><div class="kana-jump" id="kanaJump" aria-label="50音で絞り込み"></div><div id="animeList"></div></section>
@@ -76,7 +173,7 @@ header small{display:block;font-size:.7rem;margin-top:3px;color:#cabddd}
 <p class="muted">外部検索にはインターネット接続が必要です。保存はiPhone内のIndexedDBで行います。</p></section>
 <section id="detailPage" class="hidden" aria-label="作品詳細">
  <div class="detail-actions"><button type="button" id="detailBack" class="subtle">← 一覧に戻る</button><button type="button" id="detailEdit">編集</button></div>
- <div id="detailRead" class="panel premium-detail"><div class="detail-art"><img id="detailPoster" class="detail-cover hidden" alt="作品画像"></div><h2 id="detailTitle" class="detail-head"></h2><div id="detailReading" class="reading-small"></div><dl><div class="detail-field"><dt>視聴状況</dt><dd id="detailStatus"></dd></div><div class="detail-field"><dt>評価</dt><dd id="detailRating"></dd></div><div class="detail-field"><dt>視聴話数</dt><dd id="detailEpisodes"></dd></div><div class="detail-field"><dt>お気に入り</dt><dd id="detailFavorite"></dd></div><div class="detail-field"><dt>メモ</dt><dd id="detailMemo"></dd></div></dl><div class="secondary-actions"><button id="detailDelete" class="danger" type="button">この作品を削除</button></div></div>
+ <div id="detailRead" class="panel premium-detail"><div class="detail-art"><img id="detailPoster" class="detail-cover hidden" alt="作品画像"></div><h2 id="detailTitle" class="detail-head"></h2><div id="detailReading" class="reading-small"></div><dl><div class="detail-field"><dt>視聴状況</dt><dd id="detailStatus"></dd></div><div class="detail-field"><dt>評価</dt><dd id="detailRating"></dd><div class="detail-score-track" aria-hidden="true"><div id="detailScoreFill" class="detail-score-fill" style="width:0%"></div></div></div><div class="detail-field"><dt>視聴話数</dt><dd id="detailEpisodes"></dd></div><div class="detail-field"><dt>お気に入り</dt><dd id="detailFavorite"></dd></div><div class="detail-field"><dt>メモ</dt><dd id="detailMemo"></dd></div></dl><div class="secondary-actions"><button id="detailDelete" class="danger" type="button">この作品を削除</button></div></div>
  <form id="detailForm" class="panel hidden"><h2>作品を編集</h2><div class="cover-picker"><img id="editCoverPreview" class="poster large" alt="現在の作品画像"><label for="editCoverFile">画像を変更（任意）</label><input id="editCoverFile" type="file" accept="image/*"><button type="button" id="editCoverReset" class="subtle">手動画像を解除する</button><p class="hint">画像は端末内に保存しZIPにも含まれます。</p></div><label for="editTitle">作品名</label><input id="editTitle" required maxlength="400"><label for="editReading">よみがな（任意・50音順用）</label><input id="editReading" maxlength="400" placeholder="例：そうそうのふりーれん" autocomplete="off"><label for="editStatus">視聴状況</label><select id="editStatus"><option>視聴予定</option><option>視聴中</option><option>視聴済み</option><option>中断</option></select><label for="editRating">評価</label><div class="rating-control"><div class="rating-heading"><span>MY RATING</span><output id="editRatingValue" for="editRating" class="rating-value">未評価</output></div><input id="editRating" type="range" min="0" max="10" step="1" value="0" aria-label="評価" style="--rating-fill:0%"><div class="rating-ends"><span>未評価</span><span>5</span><span>10 最高</span></div></div><label><input type="checkbox" id="editFavorite" style="width:auto;margin-right:8px">お気に入りにする</label><label for="editEpisodes">視聴話数（任意）</label><input id="editEpisodes" type="number" inputmode="numeric" min="0" max="99999" placeholder="例：12"><label for="editMemo">メモ</label><textarea id="editMemo"></textarea><div class="detail-actions"><button type="button" id="detailCancel" class="subtle">キャンセル</button><button type="submit" id="detailSave" class="detail-save">保存する</button></div></form>
 </section>
 <section id="settingsPage" class="hidden"><div class="section-eyebrow">YOUR ANIME JOURNEY</div><h2>マイ統計</h2><div id="statsCards" class="stats-grid"></div><div id="statusStats" class="panel status-stats"></div><h2>設定</h2><div class="panel"><strong>ホーム画面から使う</strong><p class="hint">Safariでこのページを開き、共有ボタン →「ホーム画面に追加」を選択すると、アプリのように起動できます。記録はこのiPhone内に保存されます。</p><p class="hint">SafariのWebサイトデータを消すと記録も失われる場合があります。定期的にZIPバックアップを保管してください。</p></div><div class="panel"><strong>AnimeLog v1.0</strong><p class="muted">IndexedDB保存・バックアップ対応版</p><p>登録した作品・評価・お気に入り・メモはこの端末に保存されます。</p></div>
@@ -390,6 +487,26 @@ $("save").onclick=async()=>{
  try{await saveAll([...anime,entry]);anime=await getSavedAnime();$("confirmPanel").classList.add("hidden");$("searchPanel").classList.remove("hidden");$("externalQuery").value="";results=[];displayResults();resetAddExtras();show("list");message("保存しました")}
  catch(e){console.error(e);alert("保存に失敗しました。入力内容は残っています。")}
  finally{busy=false;if(db)$("save").disabled=false}
+};
+
+// Obsidian visual enrichment only: no changes to IndexedDB, ZIP, or record shape.
+const obsidianOriginalMakeItem=makeItem;
+makeItem=function(a){
+ const el=obsidianOriginalMakeItem(a);
+ const info=el.querySelector('.grow');
+ if(info && Number(a.rating)>0){
+  const badge=document.createElement('span');badge.className='score-pill';
+  const star=document.createElement('span');star.className='star';star.textContent='★';
+  const value=document.createElement('span');value.textContent=String(a.rating)+' / 10';
+  badge.append(star,value);info.append(badge);
+ }
+ return el;
+};
+const obsidianOriginalShowDetailRead=showDetailRead;
+showDetailRead=function(){
+ obsidianOriginalShowDetailRead();
+ const a=detailRecord(),fill=document.getElementById('detailScoreFill');
+ if(fill)fill.style.width= a && Number(a.rating)>0 ? (Math.max(0,Math.min(10,Number(a.rating)))*10)+'%' : '0%';
 };
 
 show("list");initialize();
